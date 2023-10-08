@@ -5,12 +5,21 @@ import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Screens.PlayScreen;
 import com.mygdx.game.Sprites.Brick;
 import com.mygdx.game.Sprites.Coin;
+import com.mygdx.game.Sprites.Goomba;
+
 
 public class B2WorldCreator {
+    private Array<Goomba> goombas;
+
+    public Array<Goomba> getGoombas() {
+        return goombas;
+    }
+
     public B2WorldCreator(PlayScreen screen){
         World world = screen.getWorld();
         TiledMap map = screen.getMap();
@@ -20,7 +29,7 @@ public class B2WorldCreator {
         Body body;
 
 //        cerate ground bodies/fixtures
-        for(MapObject object:map.getLayers().get(3).getObjects().getByType(RectangleMapObject.class)){
+        for(MapObject object:map.getLayers().get(2).getObjects().getByType(RectangleMapObject.class)){
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
 
             bdef.type = BodyDef.BodyType.StaticBody;
@@ -34,7 +43,7 @@ public class B2WorldCreator {
         }
 
 //        create pipe bodies/fixtures
-        for(MapObject object:map.getLayers().get(2).getObjects().getByType(RectangleMapObject.class)) {
+        for(MapObject object:map.getLayers().get(3).getObjects().getByType(RectangleMapObject.class)) {
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
 
             bdef.type = BodyDef.BodyType.StaticBody;
@@ -60,6 +69,13 @@ public class B2WorldCreator {
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
 
             new Brick(screen, rect);
+        }
+
+//        all goombas
+        goombas = new Array<Goomba>();
+        for(MapObject object:map.getLayers().get(6).getObjects().getByType(RectangleMapObject.class)){
+            Rectangle rect = ((RectangleMapObject) object).getRectangle();
+            goombas.add(new Goomba(screen, rect.x / MyGdxGame.PPM, rect.y / MyGdxGame.PPM));
         }
     }
 }

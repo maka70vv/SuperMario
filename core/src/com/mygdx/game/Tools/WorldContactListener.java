@@ -28,16 +28,18 @@ public class WorldContactListener implements ContactListener {
             case MyGdxGame.ENEMY_HEAD_BIT | MyGdxGame.MARIO_BIT:
                 if (fixA.getFilterData().categoryBits == MyGdxGame.ENEMY_HEAD_BIT)
                     ((Enemy) fixA.getUserData()).hitOnHead();
-                else
+                else if (fixB.getFilterData().categoryBits == MyGdxGame.ENEMY_HEAD_BIT)
                     ((Enemy) fixB.getUserData()).hitOnHead();
                 break;
             case MyGdxGame.ENEMY_BIT | MyGdxGame.OBJECT_BIT:
-                if ((fixA.getFilterData().categoryBits == MyGdxGame.ENEMY_BIT && fixB.getFilterData().categoryBits == MyGdxGame.GROUND_BIT)
-                        || (fixA.getFilterData().categoryBits == MyGdxGame.GROUND_BIT && fixB.getFilterData().categoryBits == MyGdxGame.ENEMY_BIT)) {
+                if (fixA.getFilterData().categoryBits == MyGdxGame.ENEMY_BIT)
                     ((Enemy) fixA.getUserData()).reverseVelocity(true, false);
+                else if (fixB.getFilterData().categoryBits == MyGdxGame.ENEMY_BIT)
                     ((Enemy) fixB.getUserData()).reverseVelocity(true, false);
-                }
                 break;
+            case MyGdxGame.ENEMY_BIT | MyGdxGame.ENEMY_BIT:
+                ((Enemy) fixA.getUserData()).reverseVelocity(true, false);
+                ((Enemy) fixB.getUserData()).reverseVelocity(true, false);
             case MyGdxGame.MARIO_BIT | MyGdxGame.ENEMY_BIT:
                 Gdx.app.log("MARIO", "DIED");
                 break;
