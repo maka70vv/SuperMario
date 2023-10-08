@@ -1,0 +1,15 @@
+fireball
+  rotate: false
+  xy: 1, 1
+  size: 32, 8
+  orig: 32, 8
+  offset: 0, 0
+  index: -1
+
+  turtle
+    rotate: false
+    xy: 339, 37
+    size: 96, 24
+    orig: 96, 24
+    offset: 0, 0
+    index: -1
