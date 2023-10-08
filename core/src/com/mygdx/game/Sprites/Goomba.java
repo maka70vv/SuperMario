@@ -57,7 +57,7 @@ public class Goomba extends Enemy {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(8 / MyGdxGame.PPM);
+        shape.setRadius(6 / MyGdxGame.PPM);
         fdef.filter.categoryBits = MyGdxGame.ENEMY_BIT;
         fdef.filter.maskBits = MyGdxGame.GROUND_BIT |
                 MyGdxGame.COIN_BIT |

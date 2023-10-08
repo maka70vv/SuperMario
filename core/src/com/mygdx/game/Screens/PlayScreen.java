@@ -7,23 +7,26 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Scenes.Hud;
 import com.mygdx.game.Sprites.Enemy;
-import com.mygdx.game.Sprites.Goomba;
+import com.mygdx.game.Sprites.Items.Item;
+import com.mygdx.game.Sprites.Items.ItemDef;
+import com.mygdx.game.Sprites.Items.Mushroom;
 import com.mygdx.game.Sprites.Mario;
 import com.mygdx.game.Tools.B2WorldCreator;
 import com.mygdx.game.Tools.WorldContactListener;
+
+import java.util.PriorityQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class PlayScreen implements Screen {
     private  MyGdxGame game;
@@ -42,6 +45,9 @@ public class PlayScreen implements Screen {
     private Mario player;
 
     private Music music;
+
+    private Array<Item> items;
+    private LinkedBlockingQueue<ItemDef> itemsToSpawn;
 
 
     public PlayScreen(MyGdxGame game){
@@ -69,6 +75,22 @@ public class PlayScreen implements Screen {
         music = MyGdxGame.manager.get("audio/music/mario_music.ogg", Music.class);
         music.setLooping(true);
         music.play();
+
+        items = new Array<Item>();
+        itemsToSpawn = new LinkedBlockingQueue<ItemDef>();
+    }
+
+    public void spawnItem(ItemDef idef){
+        itemsToSpawn.add(idef);
+    }
+
+    public void handleSpawningItems(){
+        if (!itemsToSpawn.isEmpty()){
+            ItemDef idef = itemsToSpawn.poll();
+            if (idef.type == Mushroom.class){
+                items.add(new Mushroom(this, idef.position.x, idef.position.y));
+            }
+        }
     }
 
     public TextureAtlas getAtlas(){
@@ -91,12 +113,18 @@ public class PlayScreen implements Screen {
 
     public void update(float dt){
         handleInput(dt);
+        handleSpawningItems();
 
         world.step(1/60f, 6, 2);
         player.update(dt);
         for (Enemy enemy : creator.getGoombas()){
             enemy.update(dt);
         }
+
+        for (Item item : items){
+            item.update(dt);
+        }
+
         hud.update(dt);
 
         gameCam.position.x = player.b2body.getPosition().x;
@@ -121,6 +149,9 @@ public class PlayScreen implements Screen {
         player.draw(game.batch);
         for (Enemy enemy : creator.getGoombas()){
             enemy.draw(game.batch);
+        }
+        for (Item item : items){
+            item.draw(game.batch);
         }
         game.batch.end();
 

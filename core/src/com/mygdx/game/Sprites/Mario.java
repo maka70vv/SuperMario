@@ -33,17 +33,17 @@ public class Mario extends Sprite {
         Array<TextureRegion> frames = new Array<TextureRegion>();
 //run
         for (int i = 1; i<4; i++){
-            frames.add(new TextureRegion(getTexture(), i*16, 0, 16, 16));
+            frames.add(new TextureRegion(getTexture(), i*16, 10, 16, 16));
         }
         marioRun = new Animation(0.1f, frames);
         frames.clear();
 
         for (int i = 4; i<6; i++){
-            frames.add(new TextureRegion(getTexture(), i*16, 0, 16, 16));
+            frames.add(new TextureRegion(getTexture(), i*16, 10, 16, 16));
         }
         marioJump = new Animation(0.1f, frames);
 
-        marioStand = new TextureRegion(getTexture(), 0, 0, 16, 16);
+        marioStand = new TextureRegion(getTexture(), 0, 10, 16, 16);
         defineMario();
 
         setBounds(0, 0, 16/MyGdxGame.PPM, 16/MyGdxGame.PPM);
