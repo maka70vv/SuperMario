@@ -45,7 +45,6 @@ public class B2WorldCreator {
             shape.setAsBox((rect.getWidth() / 2) / MyGdxGame.PPM, (rect.getHeight() / 2) / MyGdxGame.PPM);
             fdef.shape = shape;
             fdef.filter.categoryBits = MyGdxGame.OBJECT_BIT;
-            fdef.filter.maskBits = MyGdxGame.ENEMY_BIT | MyGdxGame.MARIO_BIT;
             body.createFixture(fdef);
         }
 
