@@ -7,6 +7,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Screens.PlayScreen;
+import com.mygdx.game.Sprites.Mario;
 
 public abstract class Item extends Sprite {
     protected PlayScreen screen;
@@ -19,15 +20,16 @@ public abstract class Item extends Sprite {
     public Item(PlayScreen screen, float x, float y){
         this.screen = screen;
         this.world = screen.getWorld();
-        setPosition(x, y);
-        setBounds(getX(), getY(), 16/ MyGdxGame.PPM, 16/MyGdxGame.PPM);
-        defineItem();
         toDestroy = false;
         destroyed = false;
+
+        setPosition(x, y);
+        setBounds(getX(), getY(), 16 / MyGdxGame.PPM, 16 / MyGdxGame.PPM);
+        defineItem();
     }
 
     public abstract void defineItem();
-    public abstract void use();
+    public abstract void use(Mario mario);
 
     public void update(float dt){
         if(toDestroy && !destroyed){
@@ -37,15 +39,13 @@ public abstract class Item extends Sprite {
     }
 
     public void draw(Batch batch){
-        if(!destroyed){
+        if(!destroyed)
             super.draw(batch);
-        }
     }
 
     public void destroy(){
         toDestroy = true;
     }
-
     public void reverseVelocity(boolean x, boolean y){
         if(x)
             velocity.x = -velocity.x;
@@ -53,3 +53,4 @@ public abstract class Item extends Sprite {
             velocity.y = -velocity.y;
     }
 }
+

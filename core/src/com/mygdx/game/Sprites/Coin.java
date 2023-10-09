@@ -16,14 +16,17 @@ public class Coin extends InteractiveTileObject {
     private final int BLANK_COIN = 28;
 
     @Override
-    public void onHeadHit() {
+    public void onHeadHit(Mario mario) {
         Gdx.app.log("Coin", "Collision");
         if (getCell().getTile().getId() == BLANK_COIN) {
             MyGdxGame.manager.get("audio/sounds/bump.wav", Sound.class).play();
         } else {
             MyGdxGame.manager.get("audio/sounds/coin.wav", Sound.class).play();
-            screen.spawnItem(new ItemDef(new Vector2(body.getPosition().x, body.getPosition().y + 16/MyGdxGame.PPM),
-                    Mushroom.class));
+
+            if (Math.random() < 0.3 && !mario.isBig()) {
+                screen.spawnItem(new ItemDef(new Vector2(body.getPosition().x, body.getPosition().y + 16/MyGdxGame.PPM),
+                        Mushroom.class));
+            }
         }
         getCell().setTile(tileSet.getTile(BLANK_COIN));
         Hud.addScore(100);
@@ -36,3 +39,4 @@ public class Coin extends InteractiveTileObject {
         setCategoryFilter(MyGdxGame.COIN_BIT);
     }
 }
+

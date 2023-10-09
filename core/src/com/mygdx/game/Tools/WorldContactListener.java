@@ -5,6 +5,8 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Sprites.Enemy;
 import com.mygdx.game.Sprites.InteractiveTileObject;
+import com.mygdx.game.Sprites.Items.Item;
+import com.mygdx.game.Sprites.Mario;
 
 public class WorldContactListener implements ContactListener {
     @Override
@@ -14,26 +16,24 @@ public class WorldContactListener implements ContactListener {
 
         int cDef = fixA.getFilterData().categoryBits | fixB.getFilterData().categoryBits;
 
-        if (fixA.getUserData() == "head" || fixB.getUserData() == "head") {
-            Fixture head = fixA.getUserData() == "head" ? fixA:fixB;
-            Fixture object = head == fixA ? fixB : fixA;
-
-            if (object.getUserData() != null && InteractiveTileObject.class.isAssignableFrom(object.getUserData().getClass())){
-                ((InteractiveTileObject) object.getUserData()).onHeadHit();
-            }
-        }
-
         switch (cDef) {
+            case MyGdxGame.MARIO_HEAD_BIT | MyGdxGame.BRICK_BIT:
+            case MyGdxGame.MARIO_HEAD_BIT | MyGdxGame.COIN_BIT:
+                if (fixA.getFilterData().categoryBits == MyGdxGame.MARIO_HEAD_BIT)
+                    ((InteractiveTileObject) fixB.getUserData()).onHeadHit((Mario) fixA.getUserData());
+                else
+                    ((InteractiveTileObject) fixA.getUserData()).onHeadHit((Mario) fixB.getUserData());
+                break;
             case MyGdxGame.ENEMY_HEAD_BIT | MyGdxGame.MARIO_BIT:
                 if (fixA.getFilterData().categoryBits == MyGdxGame.ENEMY_HEAD_BIT)
                     ((Enemy) fixA.getUserData()).hitOnHead();
-                else if (fixB.getFilterData().categoryBits == MyGdxGame.ENEMY_HEAD_BIT)
+                else
                     ((Enemy) fixB.getUserData()).hitOnHead();
                 break;
             case MyGdxGame.ENEMY_BIT | MyGdxGame.OBJECT_BIT:
                 if (fixA.getFilterData().categoryBits == MyGdxGame.ENEMY_BIT)
                     ((Enemy) fixA.getUserData()).reverseVelocity(true, false);
-                else if (fixB.getFilterData().categoryBits == MyGdxGame.ENEMY_BIT)
+                else
                     ((Enemy) fixB.getUserData()).reverseVelocity(true, false);
                 break;
             case MyGdxGame.ENEMY_BIT | MyGdxGame.ENEMY_BIT:
@@ -42,6 +42,18 @@ public class WorldContactListener implements ContactListener {
                 break;
             case MyGdxGame.MARIO_BIT | MyGdxGame.ENEMY_BIT:
                 Gdx.app.log("MARIO", "DIED");
+                break;
+            case MyGdxGame.ITEM_BIT | MyGdxGame.OBJECT_BIT:
+                if (fixA.getFilterData().categoryBits == MyGdxGame.ITEM_BIT)
+                    ((Item) fixA.getUserData()).reverseVelocity(true, false);
+                else
+                    ((Item) fixB.getUserData()).reverseVelocity(true, false);
+                break;
+            case MyGdxGame.ITEM_BIT | MyGdxGame.MARIO_BIT:
+                if (fixA.getFilterData().categoryBits == MyGdxGame.ITEM_BIT)
+                    ((Item) fixA.getUserData()).use((Mario) fixB.getUserData());
+                else
+                    ((Item) fixB.getUserData()).use((Mario) fixA.getUserData());
                 break;
         }
     }
