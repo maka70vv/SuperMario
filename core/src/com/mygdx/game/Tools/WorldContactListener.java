@@ -41,7 +41,10 @@ public class WorldContactListener implements ContactListener {
                 ((Enemy) fixB.getUserData()).reverseVelocity(true, false);
                 break;
             case MyGdxGame.MARIO_BIT | MyGdxGame.ENEMY_BIT:
-                Gdx.app.log("MARIO", "DIED");
+                if (fixA.getFilterData().categoryBits == MyGdxGame.MARIO_BIT)
+                    ((Mario) fixA.getUserData()).hit();
+                else
+                    ((Mario) fixB.getUserData()).hit();
                 break;
             case MyGdxGame.ITEM_BIT | MyGdxGame.OBJECT_BIT:
                 if (fixA.getFilterData().categoryBits == MyGdxGame.ITEM_BIT)

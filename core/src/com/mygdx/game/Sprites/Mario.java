@@ -1,5 +1,6 @@
 package com.mygdx.game.Sprites;
 
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -31,6 +32,7 @@ public class Mario extends Sprite {
     private boolean marioIsBig;
     private boolean runGrowAnimation;
     private boolean timeToDefineBigMario;
+    private boolean timeToRedefineMario;
     private boolean marioIsDead;
 
 
@@ -89,6 +91,11 @@ public class Mario extends Sprite {
         setRegion(getFrame(dt));
         if (timeToDefineBigMario){
             defineBigMario();
+        } else if (timeToRedefineMario) {
+            redefineMario();
+        }
+        if (b2body.getPosition().y < 0){
+            marioIsDead = true;
         }
     }
 
@@ -132,7 +139,9 @@ public class Mario extends Sprite {
     }
 
     public State getState(){
-        if (runGrowAnimation){
+        if (marioIsDead) {
+            return State.DEAD;
+        }else if (runGrowAnimation){
             return State.GROWING;
         }else if(b2body.getLinearVelocity().y > 0 || (b2body.getLinearVelocity().y<0 && previousState == State.JUMPING)){
             return State.JUMPING;
@@ -140,9 +149,7 @@ public class Mario extends Sprite {
             return State.FALLING;
         } else if (b2body.getLinearVelocity().x != 0){
             return State.RUNNING;
-        } else if (marioIsDead) {
-            return State.DEAD;
-        } else {
+        }else {
             return State.STANDING;
         }
     }
@@ -154,6 +161,7 @@ public class Mario extends Sprite {
         setBounds(getX(), getY(), getWidth(), getHeight()*2);
         MyGdxGame.manager.get("audio/sounds/powerup.wav", Sound.class).play();
     }
+
 
     public void defineBigMario(){
         Vector2 currentPosition = b2body.getPosition();
@@ -232,5 +240,63 @@ public class Mario extends Sprite {
         return marioIsDead;
     }
 
-//    public void
+    public float getStateTimer(){
+        return stateTimer;
+    }
+
+    public void hit(){
+        if (marioIsBig){
+            marioIsBig = false;
+            timeToRedefineMario = true;
+            setBounds(getX(), getY(), getWidth(), getHeight() / 2);
+            MyGdxGame.manager.get("audio/sounds/powerdown.wav", Sound.class).play();
+        } else {
+            MyGdxGame.manager.get("audio/music/mario_music.ogg", Music.class).play();
+            MyGdxGame.manager.get("audio/sounds/mariodie.wav", Sound.class).play();
+            marioIsDead = true;
+            Filter filter = new Filter();
+            filter.maskBits = MyGdxGame.NOTHING_BIT;
+            for (Fixture fixture : b2body.getFixtureList()){
+                fixture.setFilterData(filter);
+            }
+            b2body.applyLinearImpulse(new Vector2(0, 4f), b2body.getWorldCenter(), true);
+        }
+    }
+
+    public void redefineMario(){
+        Vector2 position = b2body.getPosition();
+        world.destroyBody(b2body);
+
+        BodyDef bdef = new BodyDef();
+        bdef.position.set(position);
+        bdef.type = BodyDef.BodyType.DynamicBody;
+        b2body = world.createBody(bdef);
+
+        FixtureDef fdef = new FixtureDef();
+
+        CircleShape shape = new CircleShape();
+        shape.setRadius(6 / MyGdxGame.PPM);
+        fdef.filter.categoryBits = MyGdxGame.MARIO_BIT;
+        fdef.filter.maskBits = MyGdxGame.GROUND_BIT |
+                MyGdxGame.COIN_BIT |
+                MyGdxGame.BRICK_BIT |
+                MyGdxGame.ENEMY_BIT |
+                MyGdxGame.OBJECT_BIT |
+                MyGdxGame.ENEMY_HEAD_BIT |
+                MyGdxGame.ITEM_BIT
+        ;
+
+        fdef.shape = shape;
+        b2body.createFixture(fdef).setUserData(this);
+
+        EdgeShape head = new EdgeShape();
+        head.set(new Vector2(-2/MyGdxGame.PPM, 6/MyGdxGame.PPM), new Vector2(2/MyGdxGame.PPM, 6/MyGdxGame.PPM));
+        fdef.filter.categoryBits = MyGdxGame.MARIO_HEAD_BIT;
+        fdef.shape = head;
+        fdef.isSensor = true;
+
+        b2body.createFixture(fdef).setUserData(this);
+
+        timeToRedefineMario = false;
+    }
 }

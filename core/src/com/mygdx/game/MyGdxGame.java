@@ -11,6 +11,7 @@ public class MyGdxGame extends Game {
 	public static final int V_HEIGHT = 208;
 	public static final float PPM = 100;
 
+	public static final short NOTHING_BIT = 0;
 	public static final short GROUND_BIT = 1;
 	public static final short MARIO_BIT = 2;
 	public static final short BRICK_BIT = 4;
@@ -38,6 +39,8 @@ public class MyGdxGame extends Game {
 		manager.load("audio/sounds/stomp.wav", Sound.class);
 		manager.load("audio/sounds/powerup_spawn.wav", Sound.class);
 		manager.load("audio/sounds/powerup.wav", Sound.class);
+		manager.load("audio/sounds/powerdown.wav", Sound.class);
+		manager.load("audio/sounds/mariodie.wav", Sound.class);
 		manager.finishLoading();
 		setScreen(new PlayScreen(this));
 	}
