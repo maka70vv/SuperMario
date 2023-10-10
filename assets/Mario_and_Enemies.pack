@@ -31,3 +31,10 @@ mushroom
   orig: 16, 16
   offset: 0, 0
   index: -1
+turtle
+  rotate: false
+  xy: 339, 37
+  size: 96, 24
+  orig: 96, 24
+  offset: 0, 0
+  index: -1

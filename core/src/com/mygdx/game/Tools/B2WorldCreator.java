@@ -8,17 +8,26 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Screens.PlayScreen;
-import com.mygdx.game.Sprites.Brick;
-import com.mygdx.game.Sprites.Coin;
-import com.mygdx.game.Sprites.Goomba;
+import com.mygdx.game.Sprites.*;
 
 
 public class B2WorldCreator {
     private Array<Goomba> goombas;
+    private Array<Turtle> turtles;
 
     public Array<Goomba> getGoombas() {
         return goombas;
     }
+    public Array<Turtle> getTurtles() {
+        return turtles;
+    }
+    public Array<Enemy> getEnemies(){
+        Array<Enemy> enemies = new Array<Enemy>();
+        enemies.addAll(goombas);
+        enemies.addAll(turtles);
+        return enemies;
+    }
+
 
     public B2WorldCreator(PlayScreen screen){
         World world = screen.getWorld();
@@ -76,6 +85,13 @@ public class B2WorldCreator {
         for(MapObject object:map.getLayers().get(6).getObjects().getByType(RectangleMapObject.class)){
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
             goombas.add(new Goomba(screen, rect.x / MyGdxGame.PPM, rect.y / MyGdxGame.PPM));
+        }
+
+        //        all turtles
+        turtles = new Array<Turtle>();
+        for(MapObject object:map.getLayers().get(7).getObjects().getByType(RectangleMapObject.class)){
+            Rectangle rect = ((RectangleMapObject) object).getRectangle();
+            turtles.add(new Turtle(screen, rect.x / MyGdxGame.PPM, rect.y / MyGdxGame.PPM));
         }
     }
 }
