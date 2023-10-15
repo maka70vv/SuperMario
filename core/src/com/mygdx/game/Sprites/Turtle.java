@@ -1,21 +1,23 @@
 package com.mygdx.game.Sprites;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Screens.PlayScreen;
 
 public class Turtle extends Enemy{
-    public enum State {WALKING, SHELL};
+    public static final int KICK_LEFT_SPEED = -2;
+    public static final int KICK_RIGHT_SPEED = 2;
+
+    public enum State {WALKING, STANDING_SHELL, MOVING_SHELL, DEAD};
     public State currentState;
     public State previousState;
     private TextureRegion shell;
+    private float deadRotationDegrees;
     private float stateTime;
     private Animation walkAnimation;
     private Array<TextureRegion> frames = new Array<TextureRegion>();
@@ -30,6 +32,7 @@ public class Turtle extends Enemy{
         shell = new TextureRegion(screen.getAtlas().findRegion("turtle"), 64, 0, 16, 24);
         walkAnimation = new Animation<TextureRegion>(0.2f, frames);
         currentState = previousState = State.WALKING;
+        deadRotationDegrees = 0;
 
         setBounds(getX(), getY(), 16 / MyGdxGame.PPM, 24 / MyGdxGame.PPM);
     }
@@ -53,6 +56,7 @@ public class Turtle extends Enemy{
                 MyGdxGame.MARIO_BIT;
 
         fdef.shape = shape;
+        fdef.restitution = 1.5f;
         b2body.createFixture(fdef).setUserData(this);
 
         //Create the Head here:
@@ -75,7 +79,8 @@ public class Turtle extends Enemy{
         TextureRegion region;
 
         switch (currentState){
-            case SHELL:
+            case STANDING_SHELL:
+            case MOVING_SHELL:
                     region = shell;
                     break;
             case WALKING:
@@ -98,20 +103,73 @@ public class Turtle extends Enemy{
     @Override
     public void update(float dt) {
         setRegion(getFrame(dt));
-        if (currentState == State.SHELL && stateTime > 5){
+        if (currentState == State.STANDING_SHELL && stateTime > 5){
             currentState = State.WALKING;
             velocity.x = 1;
         }
 
         setPosition(b2body.getPosition().x - getWidth()/2, b2body.getPosition().y - 8/MyGdxGame.PPM);
-        b2body.setLinearVelocity(velocity);
+
+        if (currentState == State.DEAD){
+            deadRotationDegrees += 3;
+            rotate(deadRotationDegrees);
+            if (stateTime > 5 && !destroyed){
+                world.destroyBody(b2body);
+                destroyed = true;
+            }
+        }else {
+            b2body.setLinearVelocity(velocity);
+        }
     }
 
     @Override
-    public void hitOnHead() {
-        if (currentState != State.SHELL){
-            currentState = State.SHELL;
+    public void hitOnHead(Mario mario) {
+        if (currentState != State.STANDING_SHELL){
+            currentState = State.STANDING_SHELL;
             velocity.x = 0;
+        } else {
+            kick(mario.getX() <= this.getX() ? KICK_RIGHT_SPEED : KICK_LEFT_SPEED);
         }
+    }
+
+    public void draw(Batch batch){
+        if (!destroyed){
+            super.draw(batch);
+        }
+    }
+
+    public void kick(int speed){
+        velocity.x = speed;
+        currentState = State.MOVING_SHELL;
+    }
+
+    public void onEnemyHit(Enemy enemy){
+        if (enemy instanceof Turtle){
+            if (((Turtle) enemy).currentState == State.MOVING_SHELL && currentState != State.MOVING_SHELL){
+                killed();
+            } else if (currentState == State.MOVING_SHELL && ((Turtle) enemy).currentState == State.WALKING) {
+                return;
+            } else {
+                reverseVelocity(true, false);
+            }
+        } else if (currentState != State.MOVING_SHELL) {
+            reverseVelocity(true, false);
+        }
+
+    }
+
+    public void killed(){
+        currentState = State.DEAD;
+        Filter filter = new Filter();
+        filter.maskBits = MyGdxGame.NOTHING_BIT;
+
+        for (Fixture fixture: b2body.getFixtureList()){
+            fixture.setFilterData(filter);
+        }
+        b2body.applyLinearImpulse(new Vector2(0, 5f), b2body.getWorldCenter(), true);
+    }
+
+    public State getCurrentState(){
+        return currentState;
     }
 }

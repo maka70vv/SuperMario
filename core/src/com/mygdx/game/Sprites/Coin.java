@@ -23,7 +23,7 @@ public class Coin extends InteractiveTileObject {
         } else {
             MyGdxGame.manager.get("audio/sounds/coin.wav", Sound.class).play();
 
-            if (Math.random() < 0.5 && !mario.isBig() ) {
+            if (Math.random() < 0.3 && !mario.isBig() ) {
                 screen.spawnItem(new ItemDef(new Vector2(body.getPosition().x, body.getPosition().y + 16/MyGdxGame.PPM),
                         Mushroom.class));
             }

@@ -13,13 +13,16 @@ import com.mygdx.game.Sprites.*;
 
 public class B2WorldCreator {
     private Array<Goomba> goombas;
-    private Array<Turtle> turtles;
+    private static Array<Turtle> turtles;
 
     public Array<Goomba> getGoombas() {
         return goombas;
     }
     public Array<Turtle> getTurtles() {
         return turtles;
+    }
+    public static void removeTurtle(Turtle turtle){
+        turtles.removeValue(turtle, true);
     }
     public Array<Enemy> getEnemies(){
         Array<Enemy> enemies = new Array<Enemy>();

@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
@@ -49,8 +50,6 @@ public class PlayScreen implements Screen {
     private Array<Item> items;
     private LinkedBlockingQueue<ItemDef> itemsToSpawn;
 
-
-
     public PlayScreen(MyGdxGame game){
         atlas = new TextureAtlas("Mario_and_Enemies.pack");
 
@@ -62,7 +61,7 @@ public class PlayScreen implements Screen {
         mapLoader = new TmxMapLoader();
         map = mapLoader.load("assets/level1.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, 1/MyGdxGame.PPM);
-        gameCam.position.set(gameport.getWorldWidth() / 2, gameport.getWorldHeight() / 2, 0);
+        gameCam.position.set(gameport.getWorldWidth()/2, gameport.getWorldHeight() / 2, 0);
 
         world = new World(new Vector2(0, -10), true);
         b2dr = new Box2DDebugRenderer();
@@ -114,30 +113,38 @@ public class PlayScreen implements Screen {
         }
     }
 
-    public void update(float dt){
+    public void update(float dt) {
         handleInput(dt);
         handleSpawningItems();
 
-        world.step(1/60f, 6, 2);
+
+        world.step(1 / 60f, 6, 2);
         player.update(dt);
-        for(Enemy enemy : creator.getEnemies()) {
+        for (Enemy enemy : creator.getEnemies()) {
             enemy.update(dt);
-            if (enemy.getX() < player.getX() + 224 / MyGdxGame.PPM) {
+            if(enemy.getX() < gameCam.position.x + 224 / MyGdxGame.PPM) {
                 enemy.b2body.setActive(true);
             }
         }
 
-        for (Item item : items){
+        for (Item item : items) {
             item.update(dt);
         }
 
         hud.update(dt);
 
         if (player.currentState != Mario.State.DEAD) {
-            gameCam.position.x = player.b2body.getPosition().x;
+            // move camera only forward
+            if (gameCam.position.x < player.b2body.getPosition().x) {
+                gameCam.position.x = player.b2body.getPosition().x;
+                // stop mario when he is running out of the screen
+            } else if (player.b2body.getPosition().x - player.b2body.getFixtureList().get(0).getShape().getRadius() <= gameCam.position.x - gameCam.viewportWidth / 2) {
+                player.b2body.setLinearVelocity(0, player.b2body.getLinearVelocity().y);
+                player.b2body.applyLinearImpulse(new Vector2(0.1f, 0), player.b2body.getLocalCenter(), true);
+            }
+            gameCam.update();
+            renderer.setView(gameCam);
         }
-        gameCam.update();
-        renderer.setView(gameCam);
     }
 
     @Override
@@ -149,7 +156,7 @@ public class PlayScreen implements Screen {
 //render map
         renderer.render();
 //        render B2DDebugLines
-        b2dr.render(world, gameCam.combined);
+//        b2dr.render(world, gameCam.combined);
 
         game.batch.setProjectionMatrix(gameCam.combined);
         game.batch.begin();
